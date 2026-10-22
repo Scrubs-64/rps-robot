@@ -1,0 +1,13 @@
+# Virtual environment
+.venv/
+
+# Python junk
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Game logs (generated files)
+logs/
+
+# VS Code settings
+.vscode/
