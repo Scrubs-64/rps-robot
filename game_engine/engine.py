@@ -101,12 +101,12 @@ class GameEngine:
         self.last_result = None
         self.error = None
 
-        # 1.COMMIT:the arm decides BEFORE the camera is ever read
+        #1. COMMIT:the arm decides BEFORE the camera is ever read
         self._set_state(S.COMMIT)
         self._committed_move = self.picker.choose_move(self.history)
         commit_time = time.time()
 
-        # 2-3.COUNTDOWN + CAPTURE, with retries if no gesture is found
+        #2-3. COUNTDOWN + CAPTURE, with retries if no gesture is found
         player_move = None
         for attempt in range(config.MAX_RETRIES + 1):
             if attempt > 0:
@@ -120,7 +120,7 @@ class GameEngine:
             if player_move is not None:
                 break
 
-        if player_move is None:        # round voided, nothing is scored
+        if player_move is None:        #round voided, nothing is scored
             self._committed_move = None
             self.round_number -= 1
             self.error = "No gesture detected, round cancelled"
@@ -128,13 +128,13 @@ class GameEngine:
             self._set_state(S.READY)
             return
 
-        # 4. REVEAL
+        #4. REVEAL
         self._set_state(S.REVEAL)
         self.arm.show(self._committed_move)
         latency = time.time() - countdown_end
         self.last_arm_move = self._committed_move   # now it may be shown
 
-        # 5. RESULT
+        #5. RESULT
         self._set_state(S.RESULT)
         result = decide_winner(player_move, self._committed_move)
         self.scoreboard.record(result)
@@ -147,7 +147,7 @@ class GameEngine:
                                   commit_time, capture_time, latency)
         self._committed_move = None
 
-        # 6. next
+        #6. Next in line
         if self.scoreboard.match_winner() is not None:
             self._set_state(S.GAME_OVER)
         else:
