@@ -8,7 +8,31 @@ GestureRecognizerOptions = mp.tasks.vision.GestureRecognizerOptions
 VisionRunningMode = mp.tasks.vision.RunningMode
 
 def on_result(result, output_image: mp.Image, timestamp_ms: int):
-    print(f"Gestures at {timestamp_ms} ms: {result.gestures}")
+    #print(f"Gestures at {timestamp_ms} ms: {result.gestures}")
+    if len(result.gestures) == 2:
+        gesture1 = result.gestures[0][0].category_name
+        gesture2 = result.gestures[1][0].category_name
+        if gesture1 == "Open_Palm":
+            if gesture2 == "Victory":
+                print('hand 1 lose')
+            elif gesture2 == "Closed_Fist":
+                print('hand 1 win')
+            else:
+                print('tie')
+        elif gesture1 == "Victory":
+            if gesture2 == "Closed_Fist":
+                print('hand 1 lose')
+            elif gesture2 == "Open_Palm":
+                print('hand 1 win')
+            else:
+                print('tie')
+        else:
+            if gesture2 == "Closed_Fist":
+                print('tie')
+            elif gesture2 == "Open_Palm":
+                print('hand 1 lose')
+            else:
+                print('hand 1 win')
 
 options = GestureRecognizerOptions(
     base_options=BaseOptions(model_asset_path="gesture_recognizer.task"),
