@@ -1,14 +1,19 @@
 import mediapipe as mp
 import time
 import cv2
+import random
 
 BaseOptions = mp.tasks.BaseOptions
 GestureRecognizer = mp.tasks.vision.GestureRecognizer
 GestureRecognizerOptions = mp.tasks.vision.GestureRecognizerOptions
 VisionRunningMode = mp.tasks.vision.RunningMode
 
+gest_list = ['Open_Palm', 'Closed_Fist', 'Victory']
+machine_play = gest_list[random.randint(0, 2)]
+
 def on_result(result, output_image: mp.Image, timestamp_ms: int):
     #print(f"Gestures at {timestamp_ms} ms: {result.gestures}")
+    global machine_play
     if len(result.gestures) == 2:
         gesture1 = result.gestures[0][0].category_name
         gesture2 = result.gestures[1][0].category_name
@@ -33,7 +38,35 @@ def on_result(result, output_image: mp.Image, timestamp_ms: int):
                 print('hand 1 lose')
             else:
                 print('hand 1 win')
+    elif len(result.gestures) == 1:
+        print('machine plays ' + machine_play)
+        gesture = result.gestures[0][0].category_name
+        if gesture == "Closed_Fist":
+            if machine_play == "Closed_Fist":
+                print('tie')
+            elif machine_play == "Open_Palm":
+                print('human lose')
+            else:
+                print('human win')
+                machine_play = gest_list[random.randint(0, 2)]
 
+        elif gesture == "Open_Palm":
+            if machine_play == "Victory":
+                print('human lose')
+            elif machine_play == "Closed_Fist":
+                print('human win')
+                machine_play = gest_list[random.randint(0, 2)]
+            else:
+                print('tie')
+        else:
+            if machine_play == "Victory":
+                print('tie')
+            elif machine_play == "Closed_Fist":
+                print('human lose')
+            else:
+                print('human win')
+                machine_play = gest_list[random.randint(0, 2)]
+    
 options = GestureRecognizerOptions(
     base_options=BaseOptions(model_asset_path="gesture_recognizer.task"),
     running_mode=VisionRunningMode.LIVE_STREAM,

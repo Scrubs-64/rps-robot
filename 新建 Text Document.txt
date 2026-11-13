@@ -1,0 +1,28 @@
+ elif len(result.gestures) == 1:
+        print('machine plays ' + machine_play)
+        gesture = result.gestures[0][0].category_name
+        if gesture == "Closed_Fist":
+            if machine_play == "Closed_Fist":
+                print('tie')
+            elif machine_play == "Open_Palm":
+                print('human lose')
+            else:
+                print('human win')
+                machine_play = gest_list[random.randint(0, 2)]
+
+        elif gesture == "Open_Palm":
+            if machine_play == "Victory":
+                print('human lose')
+            elif machine_play == "Closed_Fist":
+                print('human win')
+                machine_play = gest_list[random.randint(0, 2)]
+            else:
+                print('tie')
+        else:
+            if machine_play == "Victory":
+                print('tie')
+            elif machine_play == "Closed_Fist":
+                print('human lose')
+            else:
+                print('human win')
+                machine_play = gest_list[random.randint(0, 2)]
