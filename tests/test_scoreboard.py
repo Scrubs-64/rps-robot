@@ -1,5 +1,6 @@
 import pytest
 
+
 from game_engine.scoreboard import Scoreboard
 
 
