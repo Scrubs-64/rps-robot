@@ -10,11 +10,27 @@ VisionRunningMode = mp.tasks.vision.RunningMode
 
 gest_list = ['Open_Palm', 'Closed_Fist', 'Victory']
 machine_play = gest_list[random.randint(0, 2)]
+hand_lowered = False;
 
 def on_result(result, output_image: mp.Image, timestamp_ms: int):
+    global hand_lowered
     #print(f"Gestures at {timestamp_ms} ms: {result.gestures}")
+    if not(result.hand_landmarks == []):
+        #print(result.hand_landmarks[0][0])
+        if result.hand_landmarks[0][0].y > 0.5:
+            #print('yes')
+            if hand_lowered == False:
+                print('hand lowered')
+            hand_lowered = True
+        else:
+            if hand_lowered == True:
+                print('hand raised')
+            hand_lowered = False
+        #for i in range(0, len(result.hand_world_landmarks[0])):
+        #    print(result.hand_world_landmarks[0][i])
+    
     global machine_play
-    if len(result.gestures) == 2:
+    """ if len(result.gestures) == 2:
         gesture1 = result.gestures[0][0].category_name
         gesture2 = result.gestures[1][0].category_name
         if gesture1 == "Open_Palm":
@@ -65,7 +81,7 @@ def on_result(result, output_image: mp.Image, timestamp_ms: int):
                 print('human lose')
             else:
                 print('human win')
-                machine_play = gest_list[random.randint(0, 2)]
+                machine_play = gest_list[random.randint(0, 2)] """
     
 options = GestureRecognizerOptions(
     base_options=BaseOptions(model_asset_path="gesture_recognizer.task"),
@@ -86,6 +102,7 @@ def stream_webcam(recognizer: mp.tasks.vision.GestureRecognizer, camera_index: i
             timestamp_ms = time.monotonic_ns() // 1_000_000
             recognizer.recognize_async(mp_image, timestamp_ms)
             cv2.imshow("Webcam", bgr_frame)
+            #time.sleep(0.5)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
     finally:
