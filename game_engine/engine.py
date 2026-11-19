@@ -1,5 +1,4 @@
 import time
-
 import config
 from game_engine.rules import decide_winner
 from game_engine.states import GameState
