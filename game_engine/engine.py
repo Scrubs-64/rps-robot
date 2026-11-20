@@ -153,3 +153,4 @@ class GameEngine:
         else:
             self.arm.ready()
             self._set_state(S.READY)
+

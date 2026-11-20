@@ -42,7 +42,7 @@ class Scoreboard:
         else:
             raise ValueError(f"Invalid result: {result}")
 
-    def winner(self):
+    def match_winner(self):
         """Return "player" or "arm" once someone reached rounds_to_win, otherwise None."""
         if self.player_score >= self.rounds_to_win:
             return PLAYER
@@ -74,8 +74,8 @@ def main():
             continue
 
         print(board)
-        if board.winner():
-            print(f"{board.winner()} wins the match! Starting a new one.")
+        if board.match_winner():
+            print(f"{board.match_winner()} wins the match! Starting a new one.")
             board.reset()
 
 
