@@ -42,8 +42,9 @@ class KeyboardPlayer:
         return KEYS.get(text)              # anything else counts as "no gesture detected"
 
 
-def play_match(mode, rounds_to_win):
-    board = Scoreboard(rounds_to_win)
+def play_match(mode, rounds_to_win=None):
+    board = Scoreboard()
+    rounds_to_win = board.rounds_to_win
     engine = GameEngine(
         arm=MockArm(),
         vision=KeyboardPlayer(),

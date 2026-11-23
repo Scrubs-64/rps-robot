@@ -21,12 +21,14 @@ DRAW = "draw"
 
 
 class Scoreboard:
-    def __init__(self, rounds_to_win=3):
+    def __init__(self, rounds_to_win=None):
+        if rounds_to_win is None:
+            rounds_to_win = int(input("Enter number of wins required: "))
+
         self.rounds_to_win = rounds_to_win
         self.reset()
 
     def reset(self):
-        """Set all scores back to 0."""
         self.player_score = 0
         self.arm_score = 0
         self.draws = 0
@@ -54,30 +56,30 @@ class Scoreboard:
         return f"Player {self.player_score} - Arm {self.arm_score} (draws: {self.draws})"
 
 
-def main():
-    """Small interactive test: type the result of each round and watch the score."""
-    board = Scoreboard(rounds_to_win=3)
-    print("First to 3 wins. Type p (player won), a (arm won), d (draw), r (reset), q (quit)")
-    print(board)
+# def main():
+#     """Small interactive test: type the result of each round and watch the score."""
+#     board = Scoreboard(rounds_to_win=3)
+#     print("First to 3 wins. Type p (player won), a (arm won), d (draw), r (reset), q (quit)")
+#     print(board)
 
-    results = {"p": PLAYER, "a": ARM, "d": DRAW}
-    while True:
-        key = input("> ").strip().lower()
-        if key == "q":
-            break
-        if key == "r":
-            board.reset()
-        elif key in results:
-            board.record(results[key])
-        else:
-            print("Please type p, a, d, r or q")
-            continue
+#     results = {"p": PLAYER, "a": ARM, "d": DRAW}
+#     while True:
+#         key = input("> ").strip().lower()
+#         if key == "q":
+#             break
+#         if key == "r":
+#             board.reset()
+#         elif key in results:
+#             board.record(results[key])
+#         else:
+#             print("Please type p, a, d, r or q")
+#             continue
 
-        print(board)
-        if board.match_winner():
-            print(f"{board.match_winner()} wins the match! Starting a new one.")
-            board.reset()
+#         print(board)
+#         if board.match_winner():
+#             print(f"{board.match_winner()} wins the match! Starting a new one.")
+#             board.reset()
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

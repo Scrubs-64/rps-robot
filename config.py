@@ -1,6 +1,8 @@
-ROUNDS_TO_WIN = 3
+ROUNDS_TO_WIN = None
 COUNTDOWN_PUMPS = 3
 CAPTURE_TIMEOUT_S = 3.0
 MAX_RETRIES = 3
 DEFAULT_MODE = "random"
-LOG_PATH = "logs/rounds.csv"
+ARM_HOST = "192.168.4.1"
+ARM_USE_SERIAL = True    #True for USB-C
+SERIAL_PORT = "COM3"     #arm's port
