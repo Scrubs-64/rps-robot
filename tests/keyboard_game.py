@@ -5,10 +5,15 @@ The game engine, scoreboard and picker are the real ones.
 
 Run it from the project root (venv active):
 
-    python -m tools.keyboard_game
-    python -m tools.keyboard_game --mode adaptive --rounds 5
+    python -m tests.keyboard_game
+    python -m tests.keyboard_game --mode adaptive --rounds 5
 """
 import argparse
+import sys
+from pathlib import Path
+
+# Make the project root importable even when this file is run directly from tests/
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from arm_controller import MockArm
 from game_engine import GameEngine, Scoreboard
@@ -37,8 +42,9 @@ class KeyboardPlayer:
         return KEYS.get(text)              # anything else counts as "no gesture detected"
 
 
-def play_match(mode, rounds_to_win):
-    board = Scoreboard(rounds_to_win)
+def play_match(mode, rounds_to_win=None):
+    board = Scoreboard()
+    rounds_to_win = board.rounds_to_win
     engine = GameEngine(
         arm=MockArm(),
         vision=KeyboardPlayer(),
