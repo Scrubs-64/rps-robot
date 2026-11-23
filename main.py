@@ -1,6 +1,15 @@
 """Entry point: connects the arm, the camera, the game engine and the scoreboard, then plays.
 
 Run it from the project root (venv active):
+from game_engine.engine import GameEngine
+from gesture_recognition import GestureRecognition
+from game_engine import scoreboard
+from UI.scoreboard_ui import ScoreboardUI
+import concurrent.futures.thread
+
+vision = GestureRecognition()
+#engine = GameEngine()
+print(vision.read_gesture())
 
     python main.py --mock                       # fake arm, you type your move
     python main.py                              # real arm and real camera

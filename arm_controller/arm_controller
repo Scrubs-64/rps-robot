@@ -1,0 +1,134 @@
+import json
+import time
+
+import requests
+
+import config  # needed for the object creation line at the bottom
+
+try:
+    import serial  # pyserial, only needed when ARM_USE_SERIAL is True
+except ImportError:
+    serial = None
+
+
+class RoArmController:
+    """Controls the RoArm over USB serial or Wi-Fi."""
+
+    PUMP_JOINT = 4        # wrist pitch joint
+    PUMP_DELTA_DEG = 15   # how far it moves away from ready pose
+    PUMPS = 3
+    SPEED = 40
+    ACC = 10
+
+    GRIPPER_JOINT = 6
+    ROLL_JOINT = 5
+    WIGGLE_DEG = 30
+    WIGGLES = 3
+    ELBOW_JOINT = 3       # elbow
+
+    GRIPPER_ANGLES = {
+        "rock": 254.8,       # gripper fully closed
+        "paper": 171.3,      # gripper fully open
+        "scissors": 232.2,   # gripper half open
+    }
+
+    def __init__(self, host, use_serial, serial_port, serial_baud=115200, timeout=5):
+        self.host = host
+        self.use_serial = use_serial
+        self.serial_port = serial_port
+        self.serial_baud = serial_baud
+        self.timeout = timeout
+        self._ser = None
+
+        if self.use_serial:
+            if serial is None:
+                raise ImportError(
+                    "pyserial is required for serial mode: pip install pyserial"
+                )
+            self._ser = serial.Serial(self.serial_port, self.serial_baud, timeout=1)
+            time.sleep(0.5)  # let the port settle
+
+    # ---------- transport ----------
+
+    def send(self, command):
+        """Send one JSON command to the arm and return its reply."""
+        if self.use_serial:
+            self._ser.write((json.dumps(command) + "\n").encode("utf-8"))
+            self._ser.flush()
+            return self._ser.readline().decode("utf-8", errors="ignore")
+
+        url = f"http://{self.host}/js?json={json.dumps(command)}"
+        return requests.get(url, timeout=self.timeout).text
+
+    def close(self):
+        """Release the serial port (no-op in Wi-Fi mode)."""
+        if self._ser is not None and self._ser.is_open:
+            self._ser.close()
+
+    # ---------- motions ----------
+
+    def ready(self):
+        """Send the arm back to its initial position."""
+        try:
+            self.send({"T": 100})
+            time.sleep(1)
+            return True
+        except Exception as e:
+            print(f"ready() failed: {e}")
+            return False
+
+    def pump(self):
+        """Perform the 3-pump countdown motion."""
+        try:
+            for _ in range(self.PUMPS):
+                # Both joints move down together
+                self.send({"T": 121, "joint": self.PUMP_JOINT, "angle": 30,
+                           "spd": self.SPEED, "acc": self.ACC})
+                self.send({"T": 121, "joint": self.ELBOW_JOINT, "angle": 20,
+                           "spd": self.SPEED, "acc": self.ACC})
+                time.sleep(0.4)
+
+                # Both joints move back up together
+                self.send({"T": 121, "joint": self.PUMP_JOINT, "angle": 0,
+                           "spd": self.SPEED, "acc": self.ACC})
+                self.send({"T": 121, "joint": self.ELBOW_JOINT, "angle": 90,
+                           "spd": self.SPEED, "acc": self.ACC})
+                time.sleep(0.4)
+            return True
+        except Exception as e:
+            print(f"pump() failed: {e}")
+            return False
+
+    def show(self, move):
+        """Move the gripper to display the chosen gesture."""
+        try:
+            angle = self.GRIPPER_ANGLES[move]
+            self.send({"T": 121, "joint": self.GRIPPER_JOINT, "angle": angle,
+                       "spd": self.SPEED, "acc": self.ACC})
+            time.sleep(0.5)
+
+            if move == "scissors":
+                self.send({"T": 121, "joint": self.ROLL_JOINT, "angle": -self.WIGGLE_DEG,
+                           "spd": self.SPEED, "acc": self.ACC})
+                time.sleep(0.3)
+
+            return True
+        except Exception as e:
+            print(f"show() failed: {e}")
+            return False
+
+    def stop(self):
+        return self.ready()
+
+
+# ---------- create the object exactly as specified ----------
+
+arm = RoArmController(config.ARM_HOST, config.ARM_USE_SERIAL, config.SERIAL_PORT)
+
+
+if __name__ == "__main__":
+    arm.ready()
+    arm.pump()
+    arm.show("scissors")
+    arm.stop()
+    arm.close()
