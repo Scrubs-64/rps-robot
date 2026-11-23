@@ -13,6 +13,10 @@ class GestureRecognition:
         self.gest_list = ['Open_Palm', 'Closed_Fist', 'Victory']
         self.machine_play = random.choice(self.gest_list)
         self.hand_lowered = False
+        self.locked_gesture = None
+        self.current_gesture = None
+        self.mode = None
+        self.start = None
 
         self.options = GestureRecognizerOptions(
             base_options=BaseOptions(
@@ -26,19 +30,35 @@ class GestureRecognition:
 
     def on_result(self, result, output_image: mp.Image, timestamp_ms: int):
         #print(f"Gestures at {timestamp_ms} ms: {result.gestures}")
-        if not(result.hand_landmarks == []):
-            #print(result.hand_landmarks[0][0])
-            if result.hand_landmarks[0][0].y > 0.5:
-                #print('yes')
-                if self.hand_lowered == False:
-                    print('hand lowered')
-                self.hand_lowered = True
-            else:
-                if self.hand_lowered == True:
-                    print('hand raised')
-                self.hand_lowered = False
-            #for i in range(0, len(result.hand_world_landmarks[0])):
-            #    print(result.hand_world_landmarks[0][i])
+        match self.mode:
+            case 'pump':
+                if not(result.hand_landmarks == []):
+                    #print(result.hand_landmarks[0][0])
+                    if result.hand_landmarks[0][0].y > 0.5:
+                        #print('yes')
+                        if self.hand_lowered == False:
+                            print('hand lowered')
+                        self.hand_lowered = True
+                    else:
+                        if self.hand_lowered == True:
+                            print('hand raised')
+                        self.hand_lowered = False
+                    #for i in range(0, len(result.hand_world_landmarks[0])):
+                    #    print(result.hand_world_landmarks[0][i])
+            case 'lock_in':
+                if result.gestures != []:
+                    gesture = result.gestures[0][0].category_name
+                    #print(gesture)
+                    if self.current_gesture == None:
+                        self.current_gesture = gesture
+                    elif self.current_gesture != gesture:
+                        self.start = time.monotonic()
+                        self.current_gesture = gesture
+                        print('change detected')
+                    elif self.current_gesture == gesture and time.monotonic() - self.start >= 2 and gesture != None:
+                        self.current_gesture = gesture
+                        self.locked_gesture = gesture
+                    
         
         global machine_play
         """ if len(result.gestures) == 2:
@@ -96,23 +116,32 @@ class GestureRecognition:
         
     def stream_webcam(self, recognizer: mp.tasks.vision.GestureRecognizer, camera_index: int = 0):
         cap = cv2.VideoCapture(camera_index)
+        self.start = time.monotonic()
+        last_timestamp_ms = -1
         try:
-            while cap.isOpened():
+            while cap.isOpened() and self.locked_gesture == None:
                 ok, bgr_frame = cap.read()
                 if not ok:
                     break
                 rgb_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
                 mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
                 timestamp_ms = time.monotonic_ns() // 1_000_000
+                timestamp_ms = max(timestamp_ms, last_timestamp_ms + 1)
+                last_timestamp_ms = timestamp_ms
                 recognizer.recognize_async(mp_image, timestamp_ms)
                 cv2.imshow("Webcam", bgr_frame)
                 #time.sleep(0.5)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
         finally:
+            print('locked gesture: ' + self.locked_gesture)
             cap.release()
             cv2.destroyAllWindows()
 
-    def start(self):
+    def read_gesture(self):
+        self.mode = 'lock_in'
         with GestureRecognizer.create_from_options(self.options) as recognizer:
             self.stream_webcam(recognizer)
+
+        return self.locked_gesture
+    def pumping
