@@ -2,6 +2,7 @@ import mediapipe as mp
 import time
 import cv2
 import random
+from pathlib import Path
 
 BaseOptions = mp.tasks.BaseOptions
 GestureRecognizer = mp.tasks.vision.GestureRecognizer
@@ -20,7 +21,7 @@ class GestureRecognition:
 
         self.options = GestureRecognizerOptions(
             base_options=BaseOptions(
-                model_asset_path="gesture_recognizer.task"
+                model_asset_path=str(Path(__file__).parent / "gesture_recognizer.task")
             ),
             running_mode=VisionRunningMode.LIVE_STREAM,
             num_hands=2,
@@ -141,7 +142,12 @@ class GestureRecognition:
             self.stream_webcam(recognizer)
 
         return self.locked_gesture
+    
     def pumping(self):
         self.mode = 'pump'
         with GestureRecognizer.create_from_options(self.options) as recognizer:
             self.stream_webcam(recognizer)
+
+if __name__ == "__main__":
+    vision = GestureRecognition()
+    vision.pumping()
