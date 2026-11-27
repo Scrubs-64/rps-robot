@@ -36,7 +36,6 @@ class GestureRecognition:
                 if not(result.hand_landmarks == []):
                     #print(result.hand_landmarks[0][0])
                     if result.hand_landmarks[0][0].y > 0.5:
-                        #print('yes')
                         if self.hand_lowered == False:
                             print('hand lowered')
                         self.hand_lowered = True
@@ -117,24 +116,46 @@ class GestureRecognition:
         cap = cv2.VideoCapture(camera_index)
         self.start = time.monotonic()
         last_timestamp_ms = -1
-        try:
-            while cap.isOpened() and self.locked_gesture == None:
-                ok, bgr_frame = cap.read()
-                if not ok:
-                    break
-                rgb_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
-                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-                timestamp_ms = time.monotonic_ns() // 1_000_000
-                timestamp_ms = max(timestamp_ms, last_timestamp_ms + 1)
-                last_timestamp_ms = timestamp_ms
-                recognizer.recognize_async(mp_image, timestamp_ms)
-                cv2.imshow("Webcam", bgr_frame)
-                if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-        finally:
-            print('locked gesture: ' + self.locked_gesture)
-            cap.release()
-            cv2.destroyAllWindows()
+        match self.mode:
+            case 'read_gesture':
+                try:
+                    while cap.isOpened() and self.locked_gesture == None:
+                        ok, bgr_frame = cap.read()
+                        if not ok:
+                            break
+                        rgb_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
+                        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+                        timestamp_ms = time.monotonic_ns() // 1_000_000
+                        timestamp_ms = max(timestamp_ms, last_timestamp_ms + 1)
+                        last_timestamp_ms = timestamp_ms
+                        recognizer.recognize_async(mp_image, timestamp_ms)
+                        cv2.imshow("Webcam", bgr_frame)
+                        if cv2.waitKey(1) & 0xFF == ord("q"):
+                            break
+                finally:
+                    print('locked gesture: ' + self.locked_gesture)
+                    cap.release()
+                    cv2.destroyAllWindows()
+
+            case 'pump':
+                try:
+                    while cap.isOpened() and self.hand_lowered == False:
+                        ok, bgr_frame = cap.read()
+                        if not ok:
+                            break
+                        rgb_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
+                        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+                        timestamp_ms = time.monotonic_ns() // 1_000_000
+                        timestamp_ms = max(timestamp_ms, last_timestamp_ms + 1)
+                        last_timestamp_ms = timestamp_ms
+                        recognizer.recognize_async(mp_image, timestamp_ms)
+                        cv2.imshow("Webcam", bgr_frame)
+                        if cv2.waitKey(1) & 0xFF == ord("q"):
+                            break
+                finally:
+                    print('hand lowered!!')
+                    cap.release()
+                    cv2.destroyAllWindows()
 
     def read_gesture(self):
         self.mode = 'lock_in'
@@ -147,6 +168,8 @@ class GestureRecognition:
         self.mode = 'pump'
         with GestureRecognizer.create_from_options(self.options) as recognizer:
             self.stream_webcam(recognizer)
+
+        return True
 
 if __name__ == "__main__":
     vision = GestureRecognition()
