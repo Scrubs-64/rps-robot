@@ -1,6 +1,6 @@
-ROCK = "rock"
-PAPER = "paper"
-SCISSORS = "scissors"
+ROCK = "Closed_Fist"
+PAPER = "Open_Palm"
+SCISSORS = "Victory"
 
 ALL_MOVES = (ROCK, PAPER, SCISSORS)
 

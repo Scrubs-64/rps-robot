@@ -40,9 +40,9 @@ def build_devices(mock):
         return MockArm(), KeyboardVision()
 
     from arm_controller.roarm_controller import RoArmController
-    from vision.vision_module import VisionModule
+    from vision.gesture_recognition import GestureRecognition
     arm = RoArmController(config.ARM_HOST, config.ARM_USE_SERIAL, config.SERIAL_PORT)
-    vision = VisionModule(config.CAMERA_INDEX)
+    vision = GestureRecognition()
     return arm, vision
 
 

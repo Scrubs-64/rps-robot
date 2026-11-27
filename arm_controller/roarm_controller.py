@@ -27,9 +27,9 @@ class RoArmController:
     ELBOW_JOINT = 3       # elbow
 
     GRIPPER_ANGLES = {
-        "rock": 254.8,       # gripper fully closed
-        "paper": 171.3,      # gripper fully open
-        "scissors": 232.2,   # gripper half open
+        "Closed_Fist": 254.8,       # gripper fully closed
+        "Open_Palm": 171.3,      # gripper fully open
+        "Victory": 232.2,   # gripper half open
     }
 
     def __init__(self, host, use_serial, serial_port, serial_baud=115200, timeout=5):
