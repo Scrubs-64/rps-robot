@@ -20,8 +20,9 @@ class ScoreboardUI:
         loader = QUiLoader()
         self.window = loader.load(str(self.ui_dir / "scoreboard_ui.ui"))
         self.timer = QTimer()
+        
         self.timer.timeout.connect(self.display_video_stream)
-        self.cap = cv2.VideoCapture(0) # Open default camera
+        self.cap = cv2.VideoCapture(1) # Open default camera
         self.timer.start(30)
 
         self.window.rock.setPixmap(QPixmap(str(self.ui_dir / "rock.jpg")))

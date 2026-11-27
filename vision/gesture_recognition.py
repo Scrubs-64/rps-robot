@@ -47,7 +47,14 @@ class GestureRecognition:
                     #    print(result.hand_world_landmarks[0][i])
             case 'lock_in':
                 if result.gestures != []:
+                    if not result.gestures:
+                        self.current_gesture = None
+                        return
                     gesture = result.gestures[0][0].category_name
+                    if gesture not in self.gest_list:
+                        self.current_gesture = None
+                        return
+                    
                     if self.current_gesture == None:
                         self.current_gesture = gesture
                     elif self.current_gesture != gesture:
@@ -112,17 +119,18 @@ class GestureRecognition:
                             print('human win')
                             machine_play = gest_list[random.randint(0, 2)] 
         
-    def stream_webcam(self, recognizer: mp.tasks.vision.GestureRecognizer, camera_index: int = 0):
+    def stream_webcam(self, recognizer: mp.tasks.vision.GestureRecognizer, camera_index: int = 1):
         cap = cv2.VideoCapture(camera_index)
         self.start = time.monotonic()
         last_timestamp_ms = -1
         match self.mode:
-            case 'read_gesture':
+            case 'lock_in':
                 try:
                     while cap.isOpened() and self.locked_gesture == None:
                         ok, bgr_frame = cap.read()
                         if not ok:
                             break
+                        bgr_frame = cv2.flip(bgr_frame, 0)
                         rgb_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
                         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
                         timestamp_ms = time.monotonic_ns() // 1_000_000
@@ -173,4 +181,5 @@ class GestureRecognition:
 
 if __name__ == "__main__":
     vision = GestureRecognition()
-    vision.pumping()
+    #vision.pumping()
+    vision.read_gesture()
